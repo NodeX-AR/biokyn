@@ -243,7 +243,17 @@ export function biokynMiddleware(
   options: BioKynMiddlewareOptions,
 ): NodeMiddleware & { engine: BioKyn } {
   const engine = new BioKyn(options);
-  const base = (options.basePath ?? '/__biokyn').replace(/\/+$/, '');
+  const configuredBase = options.basePath ?? '/__biokyn';
+  let baseEnd = configuredBase.length;
+
+  while (
+    baseEnd > 0 &&
+    configuredBase.charCodeAt(baseEnd - 1) === 47
+  ) {
+    baseEnd--;
+  }
+
+  const base = configuredBase.slice(0, baseEnd);
   const shouldProtect =
     options.shouldProtect ?? ((m: string, p: string) => UNSAFE.has(m) && !p.startsWith(`${base}/`));
   const actionFor = options.actionFor ?? ((m: string, p: string) => `${m}:${p}`);
