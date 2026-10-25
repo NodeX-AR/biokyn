@@ -1,0 +1,124 @@
+
+name: Auto Label PRs
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+      - converted_to_draft
+
+permissions:
+  pull-requests: read
+  issues: write
+  contents: read
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create and apply labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const number = pr.number;
+            const title = pr.title.toLowerCase();
+            const author = pr.user.login;
+            const isDependabot = author === "dependabot[bot]";
+
+            const labels = [
+              {
+                name: "pull-request",
+                color: "1D76DB",
+                description: "Pull request"
+              },
+              {
+                name: "dependencies",
+                color: "0366D6",
+                description: "Dependency updates"
+              },
+              {
+                name: "bug",
+                color: "D73A4A",
+                description: "Bug fix"
+              },
+              {
+                name: "enhancement",
+                color: "A2EEEF",
+                description: "New feature or improvement"
+              },
+              {
+                name: "documentation",
+                color: "0075CA",
+                description: "Documentation changes"
+              },
+              {
+                name: "security",
+                color: "B60205",
+                description: "Security-related changes"
+              },
+              {
+                name: "tests",
+                color: "7057FF",
+                description: "Test-related changes"
+              },
+              {
+                name: "draft",
+                color: "FBCA04",
+                description: "Draft pull request"
+              }
+            ];
+
+            const selected = new Set(["pull-request"]);
+
+            if (isDependabot ||
+                /dependenc|bump .* from|upgrade .* from/.test(title)) {
+              selected.add("dependencies");
+            }
+
+            if (/\b(fix|bug|patch|hotfix)\b/.test(title)) {
+              selected.add("bug");
+            }
+
+            if (/\b(feat|feature|enhancement|add)\b/.test(title)) {
+              selected.add("enhancement");
+            }
+
+            if (/\b(docs|documentation)\b/.test(title)) {
+              selected.add("documentation");
+            }
+
+            if (/\b(security|vulnerability|cve)\b/.test(title)) {
+              selected.add("security");
+            }
+
+            if (/\b(test|tests|testing|ci)\b/.test(title)) {
+              selected.add("tests");
+            }
+
+            if (pr.draft) selected.add("draft");
+
+            for (const label of labels) {
+              if (selected.has(label.name)) {
+                try {
+                  await github.rest.issues.createLabel({
+                    ...context.repo,
+                    ...label
+                  });
+                } catch (error) {
+                  if (error.status !== 422) throw error;
+                }
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: number,
+              labels: [...selected]
+            });
+
+            core.info(`Applied labels: ${[...selected].join(", ")}`);
