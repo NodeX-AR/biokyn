@@ -8,6 +8,6 @@ We welcome contributions! To keep BioKyn professional and secure:
    - If adding a feature, include a test case.
    - Keep changes scoped to a single logical improvement.
 3. **Style:** We use strict TypeScript. No `any` types.
-4. **Security:** Report vulnerabilities privately via GitHub Security Advisories or to aswanthaswanthr82@gmail.com.
+4. **Security:** Report vulnerabilities privately via GitHub Security Advisories or to `aswanthr82@gmail.com`.
 
 See `docs/ARCHITECTURE.md` for our threat model and design decisions.
