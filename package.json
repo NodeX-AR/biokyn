@@ -1,7 +1,12 @@
 {
-  "name": "@biokyn/core",
+  "name": "biokyn",
   "private": true,
-  "version": "0.1.0",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "license": "Apache-2.0"
+  "scripts": {
+    "test": "npm test --workspaces",
+    "build": "npm run build --workspaces"
+  }
 }
