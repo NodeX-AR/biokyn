@@ -2,13 +2,6 @@
 
 Report vulnerabilities privately to the maintainers (e.g. via GitHub Security Advisories) rather than opening a public issue.
 
-## Threat model
-
-Mitigated: token replay, cross-action / cross-form / cross-origin token reuse, token pooling across
-sessions, cookie-clearing quota evasion, instant form-fill bots (min age), forged session cookies.
-
-Not mitigated: real-browser automation that executes the client script, residential-proxy IP rotation
-defeating per-IP anon quotas, XSS on your origin, compromised secrets.
 
 ## Hardening checklist
 
