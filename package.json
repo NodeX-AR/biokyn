@@ -1,12 +1,53 @@
 {
-  "name": "biokyn",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "name": "@biokyn/core",
+  "version": "0.2.0",
+  "description": "Zero-SaaS, context-bound bot mitigation and liveness engine with Express and Next.js adapters.",
   "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "test": "npm test --workspaces",
-    "build": "npm run build --workspaces"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": [
+    "bot-protection",
+    "captcha-alternative",
+    "hmac",
+    "rate-limit",
+    "nextjs",
+    "express"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "ioredis": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "better-sqlite3": {
+      "optional": true
+    },
+    "ioredis": {
+      "optional": true
+    }
   }
 }
