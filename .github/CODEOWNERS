@@ -1,0 +1,8 @@
+# BioKyn CODEOWNERS
+# The entire project is owned by NodeX-AR
+
+*       @NodeX-AR
+
+[Security]
+/src/crypto.ts    @NodeX-AR
+/packages/protocol/src/voprf.ts @NodeX-AR
