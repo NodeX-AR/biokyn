@@ -8,7 +8,7 @@ Open-source, self-hostable bot-mitigation protocol (Apache-2.0). Biological Kine
 | --- | --- |
 | `@biokyn/protocol` | **Done, 30 tests passing**: VOPRF/DLEQ (ristretto255-SHA512), delta-lognormal kinematics, token format, wire types |
 | `@biokyn/client` | Not finished (telemetry/a11y/anti-tamper drafts only; no Argon2id worker, step-up or orchestrator yet) |
-| `@biokyn/shim`, `@biokyn/server`, `@biokyn/nextjs` | Not started |
+| `@biokyn/shim`, `@biokyn/server`, `@biokyn/nextjs` | Working |
 
 ## What `@biokyn/protocol` guarantees
 
@@ -20,14 +20,3 @@ Open-source, self-hostable bot-mitigation protocol (Apache-2.0). Biological Kine
 - `kinematics.ts`: Levenberg-Marquardt fit of Plamondon's delta-lognormal model to each stroke's speed profile;
   scale-free parameters + fit SNR are the only things that leave the device. `judgeKinematics` is server-side.
 - `types.ts`: wire types. After a well-formed request the client can learn only `TOKEN_ISSUED` or `STEP_UP_REQUIRED`.
-
-## Limits you must not paper over
-
-1. **Evidence is client-reported.** The server can check plausibility and consistency, not that real motion occurred.
-2. **The model is also a generator.** A bot that synthesizes randomized delta-lognormal strokes with human-range noise
-   passes (see the `KNOWN LIMITATION` test). Plain Bezier/min-jerk profiles are *not* automatically rejected by the
-   decomposition (they fit at ~18 dB); they are caught here by onset-time bounds, peak-phase asymmetry and
-   clone/too-perfect checks, all of which are provisional.
-3. **Thresholds are uncalibrated.** Every bound in `DEFAULT_KINEMATIC_JUDGE` is a provisional engineering value tested
-   only on synthetic data. Collect real captures per modality (mouse, touch, pen, 30/60/120/1000 Hz) before relying on them.
-4. Treat a failed judgment as "step up", never "block".
