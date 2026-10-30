@@ -53,8 +53,12 @@ jobs:
           cache: npm
       - name: Start Redis (persistence on, DEBUG enabled for the reload test)
         run: |
+          EXTRA_REDIS_ARGS=""
+          if [ "${{ matrix.redis }}" = "7.4" ]; then
+            EXTRA_REDIS_ARGS="--enable-debug-command yes"
+          fi
           docker run -d --name redis -p 6379:6379 redis:${{ matrix.redis }} \
-            redis-server --appendonly yes --enable-debug-command yes --maxmemory-policy noeviction
+            redis-server --appendonly yes --maxmemory-policy noeviction ${EXTRA_REDIS_ARGS}
           for i in $(seq 1 30); do docker exec redis redis-cli ping | grep -q PONG && break; sleep 1; done
       - run: npm ci --ignore-scripts
       - run: npm run build:protocol
