@@ -45,14 +45,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.0.0",
     "typescript": "^5.9.0",
     "vitest": "^2.1.0"
   },
   "peerDependencies": {
-    "ioredis": ">=5"
+    "ioredis": "^6.0.0"
   },
   "peerDependenciesMeta": {
     "ioredis": {
