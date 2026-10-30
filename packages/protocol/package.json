@@ -1,0 +1,54 @@
+{
+  "name": "@biokyn/protocol",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "BioKyn protocol: wire types, kinematics, Argon2id proof-of-work and RFC 9497 ristretto255 VOPRF primitives.",
+  "license": "Apache-2.0",
+  "author": "NodeX-AR",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biokyn/biokyn.git",
+    "directory": "packages/protocol"
+  },
+  "homepage": "https://github.com/biokyn/biokyn#readme",
+  "bugs": {
+    "url": "https://github.com/biokyn/biokyn/issues"
+  },
+  "keywords": [
+    "bot-mitigation",
+    "captcha-alternative",
+    "privacy-pass",
+    "voprf",
+    "webauthn",
+    "argon2",
+    "proof-of-work",
+    "self-hosted"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@noble/curves": "^2.0.0",
+    "@noble/hashes": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^2.1.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

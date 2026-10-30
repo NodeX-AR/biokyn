@@ -1,0 +1,57 @@
+{
+  "name": "@biokyn/client",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "NodeX-AR",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biokyn/biokyn.git",
+    "directory": "packages/client"
+  },
+  "homepage": "https://github.com/biokyn/biokyn#readme",
+  "bugs": {
+    "url": "https://github.com/biokyn/biokyn/issues"
+  },
+  "keywords": [
+    "bot-mitigation",
+    "captcha-alternative",
+    "privacy-pass",
+    "voprf",
+    "webauthn",
+    "argon2",
+    "proof-of-work",
+    "self-hosted"
+  ],
+  "description": "Browser integration for BioKyn: privacy-preserving liveness collection plus an inclusive Argon2id issuance path.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./live-script": {
+      "types": "./dist/live-script.d.ts",
+      "import": "./dist/live-script.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@biokyn/protocol": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^2.1.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

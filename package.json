@@ -1,56 +1,31 @@
 {
-  "name": "@biokyn/core",
-  "version": "0.2.0",
-  "description": "Zero-SaaS, context-bound bot mitigation and liveness engine with Express and Next.js adapters.",
+  "name": "biokyn",
+  "private": true,
+  "version": "1.0.0",
+  "description": "BioKyn — self-hosted, privacy-preserving bot mitigation (Argon2id PoW, RFC 9497 VOPRF, WebAuthn)",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
+  "workspaces": [
+    "packages/*"
   ],
-  "engines": {
-    "node": ">=18"
-  },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "build:protocol": "npm run build --workspace=@biokyn/protocol",
+    "typecheck:packages": "npm run typecheck --workspace=@biokyn/protocol && npm run typecheck --workspace=@biokyn/client && npm run typecheck --workspace=@biokyn/core && npm run typecheck --workspace=@biokyn/server",
+    "build:packages": "npm run build --workspace=@biokyn/client && npm run build --workspace=@biokyn/core && npm run build --workspace=@biokyn/server && npm run build --workspace=@biokyn/shim",
+    "typecheck": "npm run build:protocol && npm run typecheck:packages",
+    "build": "npm run build:protocol && npm run build:packages",
+    "test": "npm run build:protocol && npm run test --workspace=@biokyn/protocol && npm run test --workspace=@biokyn/core && npm run test --workspace=@biokyn/client && npm run test --workspace=@biokyn/server && npm run test:scripts",
+    "check": "npm run check:lockfile && npm run build:protocol && npm run typecheck:packages && npm run test && npm run build:packages",
+    "check:lockfile": "node scripts/check-lockfile.mjs",
+    "vectors:fetch": "node scripts/fetch-rfc9497-vectors.mjs",
+    "test:vectors": "node scripts/with-env.mjs REQUIRE_OFFICIAL_VECTORS=1 -- npm run test --workspace=@biokyn/protocol -- rfc9497.official",
+    "test:redis": "npm run test:redis --workspace=@biokyn/server",
+    "eval:kinematics": "node scripts/eval-kinematics.mjs",
+    "load": "node scripts/load-test.mjs",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "test:scripts": "node --test scripts/*.test.mjs"
   },
-  "keywords": [
-    "bot-protection",
-    "captcha-alternative",
-    "hmac",
-    "rate-limit",
-    "nextjs",
-    "express"
-  ],
-  "devDependencies": {
-    "@types/node": "^26.6.5",
-    "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
-  },
-  "peerDependencies": {
-    "ioredis": ">=5"
-  },
-  "peerDependenciesMeta": {
-    "better-sqlite3": {
-      "optional": true
-    },
-    "ioredis": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "express-rate-limit": "^8.7.1"
+  "engines": {
+    "node": ">=20.11"
   }
 }

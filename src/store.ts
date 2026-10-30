@@ -7,6 +7,8 @@ export type { Store } from './types.js';
 export interface MemoryStoreOptions {
   sweepIntervalMs?: number;
   now?: () => number;
+  /** Hard bound on active keys. New keys fail closed when full. */
+  maxEntries?: number;
 }
 
 interface Entry {
@@ -18,9 +20,11 @@ export class MemoryStore implements Store {
   private readonly map = new Map<string, Entry>();
   private readonly now: () => number;
   private timer: NodeJS.Timeout | undefined;
+  private readonly maxEntries: number;
 
   constructor(o: MemoryStoreOptions = {}) {
     this.now = o.now ?? Date.now;
+    this.maxEntries = Math.max(1, o.maxEntries ?? 100_000);
     this.timer = setInterval(() => this.sweep(), o.sweepIntervalMs ?? 30_000);
     this.timer.unref();
   }
@@ -38,6 +42,7 @@ export class MemoryStore implements Store {
     const t = this.now();
     const e = this.map.get(key);
     if (e && e.exp > t) return false;
+    if (!this.map.has(key) && this.map.size >= this.maxEntries) return false;
     this.map.set(key, { n: 1, exp: t + ttlMs });
     return true;
   }
@@ -46,9 +51,10 @@ export class MemoryStore implements Store {
     const t = this.now();
     const e = this.map.get(key);
     if (!e || e.exp <= t) {
+      if (!e && this.map.size >= this.maxEntries) return Number.MAX_SAFE_INTEGER;
       this.map.set(key, { n: 1, exp: t + ttlMs });
       return 1;
-    }
+   }
     e.n += 1;
     return e.n;
   }
