@@ -8,6 +8,14 @@
 import { BlockList, isIP } from 'node:net';
 import type { HttpRequestLike } from './http.js';
 
+/** Linear-time trailing slash trim. Avoids quadratic backtracking of /\/+$/ on adversarial input. */
+function trimTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47 /* '/' */) end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
+
 export interface ClientIpOptions {
   /** IPs or CIDRs of proxies/load balancers you operate. Empty/omitted = never trust forwarded headers. */
   trustedProxies?: readonly string[];
@@ -32,8 +40,22 @@ export function normalizeIp(input: string | undefined): string | undefined {
 }
 function expandIPv6(ip: string): string | undefined {
   let tail = '';
-  const v4 = /(\d+\.\d+\.\d+\.\d+)$/.exec(ip);
-  if (v4) { const o = v4[1]!.split('.').map(Number); ip = ip.slice(0, -v4[1]!.length) + ((o[0]! << 8) | o[1]!).toString(16) + ':' + ((o[2]! << 8) | o[3]!).toString(16); }
+  // Extract trailing IPv4 dotted-quad without regex (avoids polynomial backtracking on dot-heavy input).
+  const lastColon = ip.lastIndexOf(':');
+  if (lastColon >= 0 && ip.indexOf('.', lastColon) > 0) {
+    const v4part = ip.slice(lastColon + 1);
+    const parts = v4part.split('.');
+    if (parts.length === 4 && parts.every((p) => {
+      if (p.length === 0 || p.length > 3) return false;
+      for (let i = 0; i < p.length; i++) if (p.charCodeAt(i) < 48 || p.charCodeAt(i) > 57) return false;
+      return true;
+    })) {
+      const o = parts.map(Number);
+      if (o.every((n) => n >= 0 && n <= 255)) {
+        ip = ip.slice(0, lastColon + 1) + ((o[0]! << 8) | o[1]!).toString(16) + ':' + ((o[2]! << 8) | o[3]!).toString(16);
+      }
+    }
+  }
   void tail;
   const halves = ip.split('::');
   if (halves.length > 2) return undefined;
@@ -98,10 +120,10 @@ const DEFAULT_LIMITS: Record<'challenge' | 'issue' | 'register' | 'siteverify' |
 /** Builds the `rateLimit` callback for createHandler. Route class + normalized client bucket form the key. */
 export function createRateLimiter(opts: RateLimiterOptions): (req: HttpRequestLike) => Promise<boolean> {
   const resolve = createClientIpResolver(opts.clientIp);
-  const base = (opts.basePath ?? '/biokyn').replace(/\/+$/, '');
+  const base = trimTrailingSlashes(opts.basePath ?? '/biokyn');
   const limits = { ...DEFAULT_LIMITS, ...opts.limits };
   return async (req) => {
-    const path = req.path.replace(/\/+$/, '') || '/';
+    const path = trimTrailingSlashes(req.path) || '/';
     const cls = path === `${base}/challenge` ? 'challenge' : path === `${base}/issue` ? 'issue' : path.startsWith(`${base}/webauthn/register`) ? 'register'
       : /siteverify$/.test(path) ? 'siteverify' : 'other';
     const { limit, windowMs } = limits[cls];
