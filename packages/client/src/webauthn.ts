@@ -8,6 +8,14 @@
  */
 import { base64urlDecode, base64urlEncode, powBinding, solvePowAsync, utf8, type ChallengeResponse, type PowParams, type WebAuthnAssertionB64 } from '@biokyn/protocol';
 
+/** Linear-time trailing slash trim. Avoids quadratic backtracking of /\/+$/ on adversarial input. */
+function trimTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47 /* '/' */) end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
+
 export interface WebAuthnClientOptions { basePath?: string; signal?: AbortSignal; credentials?: CredentialsContainer }
 const bytes = (b64: string): ArrayBuffer => { const u = base64urlDecode(b64); return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer; };
 const enc = (b: ArrayBuffer | ArrayBufferView): string => base64urlEncode(b instanceof ArrayBuffer ? new Uint8Array(b) : new Uint8Array(b.buffer, b.byteOffset, b.byteLength));
@@ -20,7 +28,7 @@ async function post<T>(url: string, body: unknown, signal?: AbortSignal): Promis
 
 /** Runs the full registration ceremony and returns the credential ID to remember (e.g. in localStorage). */
 export async function registerWebAuthnCredential(opts: WebAuthnClientOptions = {}): Promise<{ credentialId: string; expiresAt: number }> {
-  const base = (opts.basePath ?? '/biokyn').replace(/\/+$/, '');
+  const base = trimTrailingSlashes(opts.basePath ?? '/biokyn');
   const creds = opts.credentials ?? (typeof navigator !== 'undefined' ? navigator.credentials : undefined);
   if (!creds) throw new Error('WebAuthn is not available in this browser');
   const ch = await (await fetch(`${base}/challenge`, { credentials: 'same-origin', cache: 'no-store', signal: opts.signal })).json() as ChallengeResponse;

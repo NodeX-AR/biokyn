@@ -12,6 +12,14 @@ import { StoreCapacityError, StoreUnavailableError } from './nullifier.js';
 import { parseSiteverifyBody, siteverify, type SiteverifyIdempotencyStore } from './siteverify.js';
 import type { BioKynVerifier } from './verifier.js';
 
+/** Linear-time trailing slash trim. Avoids quadratic backtracking of /\/+$/ on adversarial input. */
+function trimTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47 /* '/' */) end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
+
 export interface HttpRequestLike {
   method: string;
   /** Pathname only, no query string. */
@@ -44,8 +52,8 @@ const API_SUFFIXES = ['/challenge', '/issue', '/motion-step-up', '/webauthn/regi
 
 /** True for every route this handler owns. Adapters must use this instead of keeping their own route list. */
 export function ownsPath(rawPath: string, opts: Pick<HandlerOptions, 'basePath' | 'siteverifyPath'> = {}): boolean {
-  const path = rawPath.replace(/\/+$/, '') || '/';
-  const base = (opts.basePath ?? '/biokyn').replace(/\/+$/, '');
+  const path = trimTrailingSlashes(rawPath) || '/';
+  const base = trimTrailingSlashes(opts.basePath ?? '/biokyn');
   return API_SUFFIXES.some((s) => path === `${base}${s}`) || path === (opts.siteverifyPath ?? '/siteverify') || SITEVERIFY_ALIASES.includes(path);
 }
 
@@ -62,7 +70,7 @@ function originOf(req: HttpRequestLike): string | undefined {
 }
 
 export function createHandler(verifier: BioKynVerifier, opts: HandlerOptions = {}): (req: HttpRequestLike) => Promise<HttpResponseLike | null> {
-  const base = (opts.basePath ?? '/biokyn').replace(/\/+$/, '');
+  const base = trimTrailingSlashes(opts.basePath ?? '/biokyn');
   const svPath = opts.siteverifyPath ?? '/siteverify';
   const svPaths = new Set([svPath, ...SITEVERIFY_ALIASES]);
   const maxBody = opts.maxBodyBytes ?? 65_536;
@@ -77,7 +85,7 @@ export function createHandler(verifier: BioKynVerifier, opts: HandlerOptions = {
 
   return async (req) => {
     const method = req.method.toUpperCase();
-    const path = req.path.replace(/\/+$/, '') || '/';
+    const path = trimTrailingSlashes(req.path) || '/';
     const isApi = path === `${base}/challenge` || path === `${base}/issue` || path === `${base}/motion-step-up` || path === `${base}/webauthn/register/options` || path === `${base}/webauthn/register/verify`;
     const isSv = svPaths.has(path);
     if (!isApi && !isSv) return null;

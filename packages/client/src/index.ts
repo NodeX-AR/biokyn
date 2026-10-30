@@ -1,5 +1,13 @@
 import { base64urlDecode, base64urlEncode, beginIssuance, completeIssuance, decodeIssuance, encodeToken, powBinding, solvePowAsync, tokenKeyId, type ChallengeResponse, type PowParams } from '@biokyn/protocol';
 import { getWebAuthnAssertion } from './webauthn.js';
+
+/** Linear-time trailing slash trim. Avoids quadratic backtracking of /\/+$/ on adversarial input. */
+function trimTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47 /* '/' */) end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
 export { LIVENESS_SCRIPT, installLiveness, livenessScriptTag } from './live-script.js';
 export * from './liveness.js';
 
@@ -24,7 +32,7 @@ const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.leng
  * proof against the pinned/advertised key) before it is handed to the application.
  */
 export async function requestInclusiveToken(opts: BioKynClientOptions = {}): Promise<InclusiveResult> {
-  const base = (opts.basePath ?? '/biokyn').replace(/\/+$/, '');
+  const base = trimTrailingSlashes(opts.basePath ?? '/biokyn');
   const challenge = await json<ChallengeResponse>(await fetch(`${base}/challenge`, { credentials: 'same-origin', cache: 'no-store', signal: opts.signal }));
   if (!challenge.pow) throw new Error('BioKyn server did not offer the inclusive lane');
   const publicKey = base64urlDecode(challenge.publicKey);
