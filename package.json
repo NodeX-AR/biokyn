@@ -25,6 +25,10 @@
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "test:scripts": "node --test scripts/*.test.mjs"
   },
+  "overrides": {
+    "tinypool": "2.1.2",
+    "esbuild": "^0.25.0"
+  },
   "engines": {
     "node": ">=20.11"
   }
