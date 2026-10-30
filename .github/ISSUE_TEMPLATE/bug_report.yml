@@ -1,0 +1,31 @@
+name: Bug report
+description: Something is not working as documented
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve BioKyn. For security issues, use the private advisory link instead of this form.
+  - type: textarea
+    id: what
+    attributes: { label: What happened?, description: What did you expect instead? }
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes: { label: Steps to reproduce, description: A minimal reproduction is ideal. }
+    validations: { required: true }
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options: ["@biokyn/server", "@biokyn/client", "@biokyn/protocol", "@biokyn/core", "@biokyn/shim", "Docs", "Other"]
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes: { label: BioKyn version, placeholder: 0.4.0-rc.1 }
+    validations: { required: true }
+  - type: input
+    id: node
+    attributes: { label: Node.js version and OS, placeholder: "Node 22.11 / Ubuntu 24.04" }
+  - type: textarea
+    id: logs
+    attributes: { label: Logs or stack trace, render: shell }

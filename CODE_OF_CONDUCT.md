@@ -60,7 +60,9 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-Email or PR.
+the project maintainers through a private
+[GitHub security advisory](https://github.com/biokyn/biokyn/security/advisories/new)
+marked "Code of Conduct", or by contacting a maintainer listed in MAINTAINERS.md.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the

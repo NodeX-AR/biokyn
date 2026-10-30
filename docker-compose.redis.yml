@@ -1,0 +1,18 @@
+# Local/staging Redis configured the way BioKyn's security state needs it. Not a production HA topology: see docs/DEPLOYMENT.md.
+services:
+  redis:
+    image: redis:7.4
+    command: >
+      redis-server --appendonly yes --appendfsync everysec --maxmemory 256mb --maxmemory-policy noeviction
+      --requirepass ${REDIS_PASSWORD:?set REDIS_PASSWORD} --enable-debug-command yes
+    ports: ['127.0.0.1:6379:6379']
+    volumes: ['biokyn-redis:/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" ping | grep PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+volumes:
+  biokyn-redis: {}

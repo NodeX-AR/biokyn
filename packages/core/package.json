@@ -1,0 +1,66 @@
+{
+  "name": "@biokyn/core",
+  "version": "0.4.0-rc.1",
+  "description": "BioKyn core compatibility and application primitives for bot mitigation, liveness, storage, and framework middleware.",
+  "license": "Apache-2.0",
+  "author": "NodeX-AR",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biokyn/biokyn.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/biokyn/biokyn#readme",
+  "bugs": {
+    "url": "https://github.com/biokyn/biokyn/issues"
+  },
+  "keywords": [
+    "bot-mitigation",
+    "captcha-alternative",
+    "privacy-pass",
+    "voprf",
+    "webauthn",
+    "argon2",
+    "proof-of-work",
+    "self-hosted"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^2.1.0"
+  },
+  "peerDependencies": {
+    "ioredis": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "ioredis": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

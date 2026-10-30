@@ -180,4 +180,6 @@ export interface BioKynMiddlewareOptions extends BioKynOptions {
   /** Token extractor. Default: x-biokyn-token header, then parsed body `_biokyn`. */
   getToken?: (req: NodeRequestLike) => string | undefined;
   getIp?: (req: NodeRequestLike) => string;
+  /** Optionally require this exact form ID for every protected route. */
+  formId?: string;
 }

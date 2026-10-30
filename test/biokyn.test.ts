@@ -248,10 +248,10 @@ describe('Express middleware', () => {
     const replay = await run(mw, post(token));
     expect(replay.nexted).toBe(false);
     expect(replay.res.statusCode).toBe(403);
-    expect(JSON.parse(replay.res.body).reason).toBe('replayed');
+    expect(JSON.parse(replay.res.body).error).toBe('verification_failed');
 
     const missing = await run(mw, post());
-    expect(JSON.parse(missing.res.body).reason).toBe('missing_token');
+    expect(JSON.parse(missing.res.body).error).toBe('verification_failed');
 
     const safe = await run(mw, { method: 'GET', url: '/page', headers: getHeaders(cookie) });
     expect(safe.nexted).toBe(true);
@@ -284,7 +284,7 @@ describe('Next.js App Router wrapper', () => {
     expect(await good.text()).toBe('ok');
     const again = await guarded(mk(), {});
     expect(again.status).toBe(403);
-    expect((await again.json()).reason).toBe('replayed');
+    expect((await again.json()).error).toBe('verification_failed');
   });
 });
 

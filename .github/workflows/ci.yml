@@ -1,12 +1,64 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  test:
+  verify:
+    name: verify (node ${{ matrix.node-version }})
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Lockfile must be committed (reproducible installs)
+        run: npm run check:lockfile
+      - run: npm ci --ignore-scripts
+      - name: Fetch official RFC 9497 test vectors
+        run: npm run vectors:fetch
+      - name: Typecheck, test, build
+        run: npm run check
+        env:
+          REQUIRE_OFFICIAL_VECTORS: '1'
+      - name: Official RFC 9497 vectors (hard gate)
+        run: npm run test:vectors
+      - name: Dependency audit (production dependencies)
+        run: npm run audit:prod
+
+  redis:
+    name: redis integration (real Redis ${{ matrix.redis }})
+    strategy:
+      fail-fast: false
+      matrix:
+        redis: ['6.2', '7.4']
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Start Redis (persistence on, DEBUG enabled for the reload test)
+        run: |
+          docker run -d --name redis -p 6379:6379 redis:${{ matrix.redis }} \
+            redis-server --appendonly yes --enable-debug-command yes --maxmemory-policy noeviction
+          for i in $(seq 1 30); do docker exec redis redis-cli ping | grep -q PONG && break; sleep 1; done
+      - run: npm ci --ignore-scripts
+      - run: npm run build:protocol
+      - run: npm run test:redis
+        env:
+          REDIS_URL: redis://127.0.0.1:6379
+          REQUIRE_REDIS: '1'

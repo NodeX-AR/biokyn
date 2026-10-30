@@ -1,0 +1,51 @@
+{
+  "name": "@biokyn/shim",
+  "version": "0.4.0-rc.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "NodeX-AR",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biokyn/biokyn.git",
+    "directory": "packages/shim"
+  },
+  "homepage": "https://github.com/biokyn/biokyn#readme",
+  "bugs": {
+    "url": "https://github.com/biokyn/biokyn/issues"
+  },
+  "keywords": [
+    "bot-mitigation",
+    "captcha-alternative",
+    "privacy-pass",
+    "voprf",
+    "webauthn",
+    "argon2",
+    "proof-of-work",
+    "self-hosted"
+  ],
+  "description": "Small compatibility helpers for migrating reCAPTCHA/Turnstile integrations to BioKyn.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@biokyn/server": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

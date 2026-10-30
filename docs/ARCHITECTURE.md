@@ -1,56 +1,42 @@
-# Architecture
+# BioKyn architecture
 
-## Token
+## 1. Challenge
 
-Wire format: `bk1.<ts>.<nonce>.<flags>.<b64url(formId)>.<b64url(hmac)>`
+The server creates a stateless challenge bound to the requesting site origin. The challenge carries a fresh nonce, an expiry, an issuer identifier, a redemption context and optional Argon2id parameters.
 
-MAC input: `bk1|ts|nonce|flags|formId|sha256(origin)|sha256(sid)|sha256(action)`.
-`origin`, `sid` and `action` are never transmitted in the token; the verifier recomputes them from
-the request, so any mismatch yields `bad_signature`.
+## 2. Fast lane
 
-## Session identity
+The intended fast lane is:
 
-`__biokyn_sid` is `HttpOnly; SameSite=Lax` (plus `Secure` in production) and carries
-`<sid>.<HMAC(sid)>`. Forged or unsigned cookies are treated as absent.
+1. Browser collects pointer/touch/pen samples locally.
+2. Samples are resampled and reduced to delta-lognormal stroke evidence.
+3. Coordinates and raw event timing stay on-device.
+4. Only quantized, scale-free evidence is sent.
+5. The server runs `judgeKinematics` and decides `ok`, `ambiguous`, or `reject`.
+6. Weak/ambiguous evidence should go to step-up, not directly to a permanent block.
 
-A client without a valid cookie gets a new session and one **bootstrap** token (`flags=1`) that can
-never verify. Cookieless issuance is counted per IP (`anonQuota`), so clearing cookies in a loop
-is throttled. The client script transparently fetches a real token once the cookie is set.
+The implementation deliberately keeps the judge thresholds in one server-side options object so deployments can calibrate them without changing the wire format.
 
-## Verification order
+## 3. Inclusive lane
 
-1. token present and parseable
-2. valid signed session cookie
-3. Origin header matches configured origin (if set)
-4. formId matches expected (if given)
-5. per-session verify quota (`verifyQuota`)
-6. HMAC check (timing-safe)
-7. reject bootstrap tokens
-8. age checks: future (> skew), `too_fast` (< minAge), `expired` (> ttl)
-9. atomic `setNx` on the nonce hash: failure means `replayed`
+Assistive and otherwise ambiguous sessions can use the machine-cost lane:
 
-Failed checks before step 9 never consume the nonce, so a legitimate user can retry.
+```text
+challenge → blinded request → Argon2id proof-of-work → issuance → token
+```
 
-## Options table
+The proof is bound to the server nonce and the blinded element, so a solution cannot simply be copied to another issuance request.
 
-| Option | Default |
-|--------|---------|
-| ttlMs | 900000 (15 min) |
-| minAgeMs | 1500 |
-| clockSkewMs | 5000 |
-| quota (challenges / session / window) | 20 |
-| anonQuota (cookieless / IP / window) | 10 |
-| verifyQuota (verifications / session / window) | 30 |
-| windowMs | 600000 |
-| trustProxy | false |
-| secureCookie | NODE_ENV === 'production' |
-| cookieName | `__biokyn_sid` |
-| sessionTtlMs | 7 days |
+## 4. Redemption
 
-## Operational notes
+The verifier accepts a token at `/siteverify` and consumes a nullifier. The server returns only the compatibility-level result; detailed evidence and reasons remain server-side.
 
-- All nodes must share the same `secret` and a shared store (Redis) for replay protection.
-- Behind a proxy, set `origin` explicitly and `trustProxy: true` only if the proxy overwrites
-  `X-Forwarded-*`. Otherwise per-IP quotas can be spoofed.
-- Rotate the secret by deploying a new one; in-flight tokens and sessions become invalid (clients re-bootstrap).
-- Fixed-window counters allow brief bursts at window boundaries.
+## 5. Framework adapters
+
+`@biokyn/server` exposes:
+
+- framework-neutral `createHandler`
+- `biokynExpress` and `requireBioKyn`
+- `biokynNext` and `withBioKyn`
+
+The design keeps HTTP parsing separate from the verifier so additional adapters can be added without changing the protocol.
