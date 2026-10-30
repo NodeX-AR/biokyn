@@ -1,6 +1,6 @@
 {
   "name": "@biokyn/server",
-  "version": "0.4.0-rc.1",
+  "version": "1.0.0",
   "type": "module",
   "license": "Apache-2.0",
   "author": "NodeX-AR",
@@ -50,7 +50,7 @@
     "test:redis": "node ../../scripts/with-env.mjs REQUIRE_REDIS=1 -- vitest run test/redis.integration.test.ts"
   },
   "dependencies": {
-    "@biokyn/protocol": "*"
+    "@biokyn/protocol": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

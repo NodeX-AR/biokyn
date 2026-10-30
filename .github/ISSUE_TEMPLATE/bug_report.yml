@@ -21,7 +21,7 @@ body:
     validations: { required: true }
   - type: input
     id: version
-    attributes: { label: BioKyn version, placeholder: 0.4.0-rc.1 }
+    attributes: { label: BioKyn version, placeholder: 1.0.0 }
     validations: { required: true }
   - type: input
     id: node

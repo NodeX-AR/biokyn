@@ -1,6 +1,6 @@
 {
   "name": "@biokyn/shim",
-  "version": "0.4.0-rc.1",
+  "version": "1.0.0",
   "type": "module",
   "license": "Apache-2.0",
   "author": "NodeX-AR",
@@ -34,7 +34,7 @@
     "dist"
   ],
   "dependencies": {
-    "@biokyn/server": "*"
+    "@biokyn/server": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
